@@ -1,7 +1,8 @@
 # https://github.com/Rapptz/discord.py/blob/async/examples/reply.py
 import discord
-
-TOKEN = 'NDcwMjg4MzYxNDY3MjgxNDM0.DjUIUw.DCm4ogdyzGSKYb3Ctn7P9xeY5qQ'
+from vars import token
+from commands import * 
+from parse_message import *
 
 client = discord.Client()
 
@@ -12,4 +13,15 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-client.run(TOKEN)
+@client.event
+async def on_message(message):
+    # we do not want the bot to reply to itself
+    if message.author == client.user:
+        return
+    if message.content.startswith('!'):
+        command, params = parse_message(message) # !command param1 param2
+        if command in commands_list:
+            new_command = Command(client, message, command, params)
+            await new_command.execute()
+
+client.run(token)
