@@ -1,4 +1,6 @@
 import discord
+import youtube_dl
+
 commands_list = ["hello", "play"]
 class Command():
 
@@ -35,6 +37,19 @@ class Hello(Command):
 class Play(Command):
 
 	async def execute(self, client, message, params):
+
+		author = message.author
+		v_channel = author.voice_channel
+		v_client = await client.join_voice_channel(v_channel)
+		
+		link = params[0]
+		player = await v_client.create_ytdl_player(link)
+		player.url = link
+
+		player.start()
+		if player.is_done():
+			print("Done playing song.")
+			v_client.disconnect()
 		return
 
 

@@ -3,8 +3,11 @@ import discord
 from vars import token
 from commands import * 
 from parse_message import *
+from opus_load import *
 
 client = discord.Client()
+
+opus_load()
 
 @client.event
 async def on_ready():
