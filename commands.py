@@ -9,19 +9,8 @@ class Command():
 		self.message = message
 		self.command = command
 		self.params = params
-		# self.parse_message(self):
-
-	# def parse_message(self):
-	# 	msg_string = self.message.content[1:]
- #        msg_string_list = msg_string.split()
- #        command = msg_string_list[0] # e.g. in 'play <link>', play is command
- #        self.command = command
- #        self.params = msg_string_list[1:] # list of items following play (sep by space)
- #        print("Command: " + command) # debug
- #        print("Params: " + params)
 
 	async def execute(self):
-		# commands_dict[self.command]()
 		if self.command == "hello":
 			await Hello.execute(self, self.client, self.message)
 		if self.command == "play":
@@ -37,20 +26,24 @@ class Hello(Command):
 class Play(Command):
 
 	async def execute(self, client, message, params):
-
 		author = message.author
-		v_channel = author.voice_channel
-		v_client = await client.join_voice_channel(v_channel)
+		if not(client.is_voice_connected(author.server)):
+			v_channel = author.voice_channel
+			v_client = await client.join_voice_channel(v_channel)
+		else: 
+			print("Already connected to voice")
+			for vc in client.voice_clients:
+				if vc.channel == author.voice_channel:
+					v_client = vc
 		
 		link = params[0]
-		player = await v_client.create_ytdl_player(link)
-		player.url = link
+		player = await v_client.create_ytdl_player(link, after=after_song)
 
 		player.start()
-		if player.is_done():
-			print("Done playing song.")
-			v_client.disconnect()
-		return
+		print("Playing song now")
 
+def after_song(): # debugging purposes
+	print("Finished playing song.")
+	
 
 
