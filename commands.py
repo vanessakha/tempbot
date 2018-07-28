@@ -14,7 +14,6 @@ class Command():
 		if self.command == "hello":
 			await Hello.execute(self, self.client, self.message)
 		if self.command == "play":
-
 			await Play.execute(self, self.client, self.message, self.params)
 
 class Hello(Command):
