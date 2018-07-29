@@ -27,4 +27,10 @@ async def on_message(message):
             new_command = Command(client, message, command, params)
             await new_command.execute()
 
+@client.event
+async def on_member_join(member):
+    await client.send_message(client.get_channel('470289384814542860'), "Welcome, " + member.mention + "!")
+    private_ch = await client.start_private_message(member)
+    await client.send_message(private_ch, "Welcome to temp server!")
+
 client.run(token)
