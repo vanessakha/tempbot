@@ -1,6 +1,6 @@
 # https://github.com/Rapptz/discord.py/blob/async/examples/reply.py
 import discord
-from vars import token
+from vars import token debug
 from commands import *
 from parse_message import *
 from opus_load import *
