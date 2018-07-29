@@ -1,7 +1,7 @@
 import discord
 import platform
 
-opus_libs = ['libopus-0.dll']#, 'libopus.0.dylib', 'libopus.so.0']
+opus_libs = ['libopus-0.dll', 'libopus.0.dylib', 'libopus.so.0', 'libopus-0.x64.dll']
 # must download libopus for your respective OS for bot to use voice
 	# mac and windows opus libs added, but linux needs to do this step
 	# either place in this directory set up path to make it recognizeable
@@ -11,7 +11,7 @@ def opus_load():
     try:
       discord.opus.load_opus(lib)
       return
-    except:
+  	except:
       pass
 
 """
