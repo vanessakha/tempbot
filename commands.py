@@ -3,7 +3,7 @@ import youtube_dl
 import googletrans
 translator = googletrans.Translator()
 
-commands_list = ["hello", "play", "disconnect", "purge", "translate"]
+commands_list = ["hello", "play", "disconnect", "purge", "translate", "poll"]
 
 class Command():
 
@@ -24,6 +24,8 @@ class Command():
 			await translate(self.client, self.message, self.params)
 		if self.command == "purge":
 			await purge(self.client, self.message, self.params)
+		if self.command == "poll":
+			await poll(self.client, self.message, self.params)
 
 async def hello(client, message):
 	msg = "Hello {0.author.mention}".format(message)
@@ -77,6 +79,49 @@ async def translate(client, message, params):
 	await client.send_message(message.channel, final_msg)
 	return
 
+async def poll(client, message, params):
+
+	if not params:
+		await client.send_message(message.channel, "Must ask a question in order to begin poll.")
+		return 
+
+	question = " ".join(params)
+	await client.send_message(message.channel, "Type 'start' when you are done adding options.")
+	option_num = '1'
+	options_list = []
+
+	options_count = 0
+	max_options = 9
+	option_letter = '1'
+	option_msg = None
+
+	while (option_msg == None or option_msg.content != "start") and max_options <= max_options:
+		new_option = await client.send_message(message.channel, "Option " + option_letter + ": \n")
+		option_msg = await client.wait_for_message(author=message.author)
+		options_list.append(new_option.content + " " + option_msg.content)
+		option_letter = chr(ord(option_letter) + 1)
+		options_count += 1
+
+	options_list.pop()
+	options_count -= 1
+
+	if options_count == 0:
+		await client.send_message(message.channel, "Must specify some options to start poll.")
+		return
+
+	options_string = "\n".join(options_list)
+	poll_msg = await client.send_message(message.channel, "Poll time! Here's the question:\n" + question + "\n" + options_string + "\n" + "Vote by reacting with the respective emoji!")
+
+	emojis_str_list = ["\N{DIGIT ONE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT TWO}\N{COMBINING ENCLOSING KEYCAP}", 
+						"\N{DIGIT THREE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT FOUR}\N{COMBINING ENCLOSING KEYCAP}",
+						"\N{DIGIT FIVE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT SIX}\N{COMBINING ENCLOSING KEYCAP}", 
+						"\N{DIGIT SEVEN}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT EIGHT}\N{COMBINING ENCLOSING KEYCAP}", 
+						"\N{DIGIT NINE}\N{COMBINING ENCLOSING KEYCAP}"]
+
+	reactions_count = 0
+	while reactions_count < options_count:
+		await client.add_reaction(poll_msg, emojis_str_list[reactions_count])
+		reactions_count += 1
 
 def after_song(): # debugging purposes
 	print("Finished playing song.")
