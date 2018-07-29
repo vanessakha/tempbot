@@ -1,7 +1,8 @@
 import discord
 import youtube_dl
 
-commands_list = ["hello", "play"]
+commands_list = ["hello", "play", "disconnect"]
+
 class Command():
 
 	def __init__(self, client, message, command, params):
@@ -12,19 +13,17 @@ class Command():
 
 	async def execute(self):
 		if self.command == "hello":
-			await Hello.execute(self, self.client, self.message)
+			await hello(self.client, self.message)
 		if self.command == "play":
-			await Play.execute(self, self.client, self.message, self.params)
+			await play(self.client, self.message, self.params)
+		if self.command == "disconnect":
+			await disconnect(self.client, self.message)
 
-class Hello(Command):
-
-	async def execute(self, client, message):
+async def hello(client, message):
 		msg = "Hello {0.author.mention}".format(message)
 		await self.client.send_message(self.message.channel, msg)
 
-class Play(Command):
-
-	async def execute(self, client, message, params):
+async def play(client, message, params):
 		author = message.author
 		if not(client.is_voice_connected(author.server)):
 			v_channel = author.voice_channel
@@ -40,6 +39,10 @@ class Play(Command):
 
 		player.start()
 		print("Playing song now")
+
+async def disconnect(client, message):
+		for vc in client.voice_clients:
+			await vc.disconnect()
 
 def after_song(): # debugging purposes
 	print("Finished playing song.")
