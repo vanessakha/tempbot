@@ -93,25 +93,19 @@ emojis_str_list = ["\N{DIGIT ONE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT TWO}
 					"\N{DIGIT NINE}\N{COMBINING ENCLOSING KEYCAP}"]
 
 
+# async def get_poll_time():
+# async def get_poll_options():
+# async def set_poll_reactions():
+# async def calculate_results():
+# async def give_poll_results():
 
-async def start_poll(client, message, params):
-	global is_polling
-	if is_polling: #makes sure a poll is not already running
-		await client.send_message(message.channel, "A poll is currently running. Please wait until the poll has concluded.")
-		return
-	is_polling = True
-
+async def poll(client, message, params):
 	if not params:
 		await client.send_message(message.channel, "Must ask a question in order to begin poll.")
-		is_polling = False
 		return
+
 	question = " ".join(params)
 
-	await get_poll_time(client, message, params, question)
-
-
-
-async def get_poll_time(client, message, params, question):
 	poll_time = ""
 	invalid_time_count = 0
 	while not(poll_time.isdigit()):
@@ -122,15 +116,11 @@ async def get_poll_time(client, message, params, question):
 		poll_time = poll_time_msg.content
 		if poll_time == "end":
 			await client.send_message(message.channel, "Ending poll.")
-			is_polling = False
 			return
 		invalid_time_count += 1
 
 	poll_time = int(poll_time) * 60 # convert to seconds
 
-	await get_poll_options(client, message, params, question, poll_time)
-
-async def get_poll_options(client, message, params, question, poll_time):
 	await client.send_message(message.channel, "Type 'start' when you are done adding options.")
 
 	option_num = '1'
@@ -153,15 +143,9 @@ async def get_poll_options(client, message, params, question, poll_time):
 
 	if options_count == 0:
 		await client.send_message(message.channel, "Must specify some options to start poll.")
-		is_polling = False
 		return
 
 	options_string = "\n".join(options_list)
-
-	await setup_poll(client, message, params, question, poll_time, options_string)
-
-
-async def setup_poll(client, message, params, question, poll_time, options_string):
 	poll_msg = await client.send_message(message.channel, "Poll time! Here's the question:\n" + question + "\n`" + options_string + "`\n" + "Vote by reacting with the respective emoji!")
 
 	reactions_count = 0
@@ -171,12 +155,6 @@ async def setup_poll(client, message, params, question, poll_time, options_strin
 	print("reactions count is " + str(reactions_count))
 
 	await asyncio.sleep(5) # poll_time
-
-# async def calculate_results():
-# async def give_poll_results():
-
-async def poll(client, message, params):
-
 
 	cached_poll_msg = discord.utils.get(client.messages, id=poll_msg.id)
 
