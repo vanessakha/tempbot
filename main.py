@@ -1,6 +1,6 @@
 # https://github.com/Rapptz/discord.py/blob/async/examples/reply.py
 import discord
-from vars import token
+from vars import *
 from commands import * 
 from parse_message import *
 from opus_load import *
@@ -29,7 +29,9 @@ async def on_message(message):
 
 @client.event
 async def on_member_join(member):
-    await client.send_message(client.get_channel('470289384814542860'), "Welcome, " + member.mention + "!")
+    
+    # add welcome_channel_id to vars.py
+    await client.send_message(client.get_channel(welcome_channel_id), "Welcome, " + member.mention + "!")
     private_ch = await client.start_private_message(member)
     await client.send_message(private_ch, "Welcome to temp server!")
 

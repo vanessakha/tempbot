@@ -1,6 +1,8 @@
 import discord
 import youtube_dl
 import googletrans
+import asyncio
+
 translator = googletrans.Translator()
 
 commands_list = ["hello", "play", "disconnect", "purge", "translate", "poll"]
@@ -45,12 +47,17 @@ async def play(client, message, params):
 	link = params[0]
 	player = await v_client.create_ytdl_player(link, after=after_song)
 
-	player.start()
+	try:
+		player.start()
+	except:
+		await client.send_message("Must use a valid Youtube URL.")
+
 	print("Playing song now")
 
 async def disconnect(client, message):
 	for vc in client.voice_clients:
 		await vc.disconnect()
+		return 
 
 async def purge(client, message, params):
 	num_to_purge = params[0]
@@ -79,14 +86,42 @@ async def translate(client, message, params):
 	await client.send_message(message.channel, final_msg)
 	return
 
-async def poll(client, message, params):
+emojis_str_list = ["\N{DIGIT ONE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT TWO}\N{COMBINING ENCLOSING KEYCAP}", 
+					"\N{DIGIT THREE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT FOUR}\N{COMBINING ENCLOSING KEYCAP}",
+					"\N{DIGIT FIVE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT SIX}\N{COMBINING ENCLOSING KEYCAP}", 
+					"\N{DIGIT SEVEN}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT EIGHT}\N{COMBINING ENCLOSING KEYCAP}", 
+					"\N{DIGIT NINE}\N{COMBINING ENCLOSING KEYCAP}"]
 
+# async def get_poll_time():
+# async def get_poll_options():
+# async def set_poll_reactions():
+# async def calculate_results():
+# async def give_poll_results():
+
+async def poll(client, message, params):
 	if not params:
 		await client.send_message(message.channel, "Must ask a question in order to begin poll.")
 		return 
 
 	question = " ".join(params)
+
+	poll_time = ""
+	invalid_time_count = 0
+	while not(poll_time.isdigit()):
+		await client.send_message(message.channel, "Duration of poll in minutes: ")
+		if invalid_time_count >= 1:
+			await client.send_message(message.channel, "Type 'end' to cancel poll.")
+		poll_time_msg = await client.wait_for_message(author=message.author, channel=message.channel)
+		poll_time = poll_time_msg.content
+		if poll_time == "end":
+			await client.send_message(message.channel, "Ending poll.")
+			return 
+		invalid_time_count += 1
+
+	poll_time = int(poll_time) * 60 # convert to seconds
+
 	await client.send_message(message.channel, "Type 'start' when you are done adding options.")
+
 	option_num = '1'
 	options_list = []
 
@@ -95,9 +130,9 @@ async def poll(client, message, params):
 	option_letter = '1'
 	option_msg = None
 
-	while (option_msg == None or option_msg.content != "start") and max_options <= max_options:
+	while (option_msg == None or option_msg.content != "start") and options_count <= max_options:
 		new_option = await client.send_message(message.channel, "Option " + option_letter + ": \n")
-		option_msg = await client.wait_for_message(author=message.author)
+		option_msg = await client.wait_for_message(author=message.author, channel=message.channel)
 		options_list.append(new_option.content + " " + option_msg.content)
 		option_letter = chr(ord(option_letter) + 1)
 		options_count += 1
@@ -110,18 +145,77 @@ async def poll(client, message, params):
 		return
 
 	options_string = "\n".join(options_list)
-	poll_msg = await client.send_message(message.channel, "Poll time! Here's the question:\n" + question + "\n" + options_string + "\n" + "Vote by reacting with the respective emoji!")
-
-	emojis_str_list = ["\N{DIGIT ONE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT TWO}\N{COMBINING ENCLOSING KEYCAP}", 
-						"\N{DIGIT THREE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT FOUR}\N{COMBINING ENCLOSING KEYCAP}",
-						"\N{DIGIT FIVE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT SIX}\N{COMBINING ENCLOSING KEYCAP}", 
-						"\N{DIGIT SEVEN}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT EIGHT}\N{COMBINING ENCLOSING KEYCAP}", 
-						"\N{DIGIT NINE}\N{COMBINING ENCLOSING KEYCAP}"]
+	poll_msg = await client.send_message(message.channel, "Poll time! Here's the question:\n" + question + "\n`" + options_string + "`\n" + "Vote by reacting with the respective emoji!")
 
 	reactions_count = 0
 	while reactions_count < options_count:
 		await client.add_reaction(poll_msg, emojis_str_list[reactions_count])
 		reactions_count += 1
+	print("reactions count is " + str(reactions_count))
+
+	await asyncio.sleep(5) # poll_time
+
+	cached_poll_msg = discord.utils.get(client.messages, id=poll_msg.id)
+
+	total_reactions = 0
+	max_reactions = 0
+	max_reactions_option_indices = []
+	reaction_index = 0
+	reaction_num = 1
+	reactions_per_option = []
+	for reaction in cached_poll_msg.reactions:
+		print("reaction count is " + str(reaction.count))
+		print("The reaction_num is" + str(reaction_num))
+		if reaction_num > reactions_count:
+			break
+		option_reactions_count = reaction.count - 1 # exclude the initial reaction
+		print("option_reactions_count is" + str(option_reactions_count))
+		if option_reactions_count > max_reactions: 
+			max_reactions_option_indices = []
+			max_reactions_option_indices.append(reaction_index)
+		if option_reactions_count == max_reactions:
+			max_reactions_option_indices.append(option_reactions_count)
+		reactions_per_option.append(option_reactions_count)
+		total_reactions += option_reactions_count
+		print("total_reactions is " + str(total_reactions))
+		reaction_num += 1
+		reaction_index += 1
+	print("max_reactions_option_indices: ")
+	print(max_reactions_option_indices)
+	if total_reactions == 0:
+		await client.send_message(message.channel, "There were no votes, closing poll.")
+		return
+
+
+	print(reactions_per_option)
+	# calculate percentage
+	reaction_percentages = []
+	for r_p_m in reactions_per_option:
+		reaction_percentage = (r_p_m / total_reactions) * 100
+		reaction_percentage = round(reaction_percentage, 2)
+		reaction_percentages.append(reaction_percentage)
+
+	print(reaction_percentages)
+
+	results_list = []
+	i = 0
+	for option in options_list:
+		results_list.append(option + " received " + str(reaction_percentages[i]) + "% of the votes.")
+		i += 1
+
+	results_str = "The poll has ended! Here are the results:\n"
+	results_str = results_str + "\n".join(results_list)
+	if len(max_reactions_option_indices) == 1:
+		results_str = results_str + "\nThe winner is \n" + options_list[max_reactions_option_indices[0]]
+	if len(max_reactions_option_indices) > 1:
+		tied_list = []
+		for index in max_reactions_option_indices:
+			tied_list.append(options_list[index])
+		tied_str = "\n".join(tied_list)
+		results_str = results_str + "\nThere is a tie between the following options: \n" + tied_str 
+	await client.send_message(message.channel, results_str)
+		
+
 
 def after_song(): # debugging purposes
 	print("Finished playing song.")
