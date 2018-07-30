@@ -163,6 +163,7 @@ async def poll(client, message, params):
 	reaction_index = 0
 	reaction_num = 1
 	reactions_per_option = []
+
 	for reaction in cached_poll_msg.reactions:
 		print("reaction count is " + str(reaction.count))
 		print("The reaction_num is" + str(reaction_num))
@@ -173,6 +174,7 @@ async def poll(client, message, params):
 		if option_reactions_count > max_reactions: 
 			max_reactions_option_indices = []
 			max_reactions_option_indices.append(reaction_index)
+			max_reactions = option_reactions_count
 		if option_reactions_count == max_reactions:
 			max_reactions_option_indices.append(option_reactions_count)
 		reactions_per_option.append(option_reactions_count)
@@ -180,6 +182,7 @@ async def poll(client, message, params):
 		print("total_reactions is " + str(total_reactions))
 		reaction_num += 1
 		reaction_index += 1
+
 	print("max_reactions_option_indices: ")
 	print(max_reactions_option_indices)
 	if total_reactions == 0:
