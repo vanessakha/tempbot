@@ -92,13 +92,6 @@ emojis_str_list = ["\N{DIGIT ONE}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT TWO}
 					"\N{DIGIT SEVEN}\N{COMBINING ENCLOSING KEYCAP}", "\N{DIGIT EIGHT}\N{COMBINING ENCLOSING KEYCAP}",
 					"\N{DIGIT NINE}\N{COMBINING ENCLOSING KEYCAP}"]
 
-
-# async def get_poll_time():
-# async def get_poll_options():
-# async def set_poll_reactions():
-# async def calculate_results():
-# async def give_poll_results():
-
 async def poll(client, message, params):
 	if not params:
 		await client.send_message(message.channel, "Must ask a question in order to begin poll.")
@@ -218,8 +211,6 @@ async def poll(client, message, params):
 		tied_str = "\n".join(tied_list)
 		results_str = results_str + "\nThere is a tie between the following options: \n" + tied_str
 	await client.send_message(message.channel, results_str)
-
-
 
 def after_song(): # debugging purposes
 	print("Finished playing song.")

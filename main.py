@@ -1,6 +1,6 @@
 # https://github.com/Rapptz/discord.py/blob/async/examples/reply.py
 import discord
-from vars import *
+from var import *
 from commands import * 
 from parse_message import *
 from opus_load import *
@@ -35,4 +35,15 @@ async def on_member_join(member):
     private_ch = await client.start_private_message(member)
     await client.send_message(private_ch, "Welcome to temp server!")
 
-client.run(token)
+
+async def run_tempbot():
+    await client.login(token)
+    await client.connect()
+
+try:
+    client.loop.run_until_complete(run_tempbot())
+except:
+    client.loop.run_until_complete(client.logout())
+finally: 
+    client.loop.close()
+# client.run(token)
