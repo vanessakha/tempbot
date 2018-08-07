@@ -8,7 +8,7 @@ from translate import *
 from purge import *
 from poll import *
 
-commands_list = ["hello", "play", "disconnect", "purge", "translate", "poll"]
+commands_list = ["hello", "play", "disconnect", "purge", "translate", "poll", "coinflip"]
 
 class Command():
 
@@ -31,4 +31,5 @@ class Command():
 			await purge(self.client, self.message, self.params)
 		if self.command == "poll":
 			await poll(self.client, self.message, self.params)
-
+		if self.command == "coinflip":
+			await coinflip(self.client, self.message)
