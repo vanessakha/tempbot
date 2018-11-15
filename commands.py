@@ -7,6 +7,7 @@ from disconnect import *
 from translate import *
 from purge import *
 from poll import *
+from lint import *
 
 commands_list = ["hello", "play", "disconnect",
                  "purge", "translate", "poll", "coinflip", "lint"]
