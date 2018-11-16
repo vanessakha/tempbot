@@ -3,5 +3,6 @@ googletrans
 libopus
 ffmpeg
 	- see Gorialis's comment on https://github.com/Rapptz/discord.py/issues/1149 for help in setting up PATH environement for ffmpeg
-youtube-dl
+youtube_dl
 googletrans
+yapf
